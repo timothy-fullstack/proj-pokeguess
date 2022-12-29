@@ -4,7 +4,8 @@ import styles from '../styles/Home.module.css'
 import { Children, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { app, database } from '../firebaseConfig';
-import { collection, addDoc, getDocs } from 'firebase/firestore';
+import { query ,collection, addDoc, getDocs, orderBy, doc, onSnapshot } from 'firebase/firestore';
+
 
 export default function Home({ data }) {
   const letters = ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'z', 'x', 'c', 'v', 'b', 'n', 'm', '-'];
@@ -19,6 +20,7 @@ export default function Home({ data }) {
   const [name, setName] = useState('');
 
   const dbInstance = collection(database, 'highscores');
+  const q = query(dbInstance, orderBy("score", "desc"))
 
   const handleKeyPress = (e, pokemon) => {
       const value = e.target.textContent;
@@ -36,12 +38,22 @@ export default function Home({ data }) {
       }
   }
 
+  onSnapshot(q, (snapshot) => {
+    let highscoreTemp = []
+    snapshot.docs.forEach(doc => {
+      highscoreTemp.push({ ...doc.data(), id: doc.id })
+    })
+    setHighscores(highscoreTemp)
+  })
+
   useEffect(() => {
     setPokemon(data)
     createBlock(data.name);
     const buttons = document.querySelectorAll('.letter');
     buttons.forEach(button => {
       button.disabled = false;
+      button.classList.remove('correct');
+      button.classList.remove('wrong');
     })
     setLives(5);
     createHeart(lives);
@@ -58,6 +70,7 @@ export default function Home({ data }) {
       divs.push(<img src='/heart-icon.png'/>);
     }
     setHeart(divs);
+    
   }
   
   const createBlock = (string) => {
@@ -104,6 +117,8 @@ export default function Home({ data }) {
     const buttons = document.querySelectorAll('.letter');
     buttons.forEach(button => {
       button.disabled = false;
+      button.classList.remove('correct');
+      button.classList.remove('wrong');
     })
 
     switch(lives) {
@@ -124,30 +139,18 @@ export default function Home({ data }) {
     createBlock(data.name);
     
   }
-
-  const getHighscores = async () => {
-    setHighscores([]);
-    let highscoresTemp = [];
-    await getDocs(dbInstance, { field: 'score', direction: 'desc' })
-      .then((data) => {
-        data.docs.map((item, index) => {
-          highscoresTemp.push({ ...item.data(), id: item.id, key: index })
-      })
-    })
-
-    setHighscores(highscoresTemp);
-
-    setHighscoresModal(true);
-  }
+  
 
   const saveHighscore = () => {
+    const input = document.querySelector('.input');
     addDoc(dbInstance, {
         name: name,
         score: score
+    }).then(() => {
+        setName('')
     })
-        .then(() => {
-            setName('')
-        })
+
+    input.style.display = "none";
   }
 
   return (
@@ -160,7 +163,7 @@ export default function Home({ data }) {
       </Head>
       <main className={ styles.main }>
         <div className={styles.user}>
-          <button onClick={getHighscores}>Highscores</button>
+          <button onClick={() => setHighscoresModal(true)}>Highscores</button>
           <h4>Score: { score }</h4>
           <div className={styles.lives}>
             { heart }
@@ -200,7 +203,7 @@ export default function Home({ data }) {
             <h1>Game Over</h1>
             <h3>Score: {score}</h3>
             { score > 0 && (
-              <div className={styles.inputWrapper}>
+              <div className={`input ${styles.inputWrapper}`}>
                 <input type="text" name="name" id="name" value={name} onChange={(e) => setName(e.target.value) }/>
                 <button onClick={saveHighscore} >Save</button>
               </div>
@@ -218,7 +221,7 @@ export default function Home({ data }) {
               { highscores && (
                 highscores.map((highscore, index) => (
                   <div className={styles.row} key={index}>
-                    <div className={styles.column}><span>{ index + 1}</span>{highscore.name}</div>
+                    <div className={styles.column}><span>{ index + 1}. </span>{highscore.name}</div>
                     <div className={styles.column}>{highscore.score}</div>
                   </div>
                   
@@ -234,7 +237,7 @@ export default function Home({ data }) {
   )
 }
 
-export async function getServerSideProps(context) {
+export async function getServerSideProps() {
   let rand = Math.floor(Math.random() * 900) + 1;
   const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${rand}`)
   const data = await res.json()
