@@ -3,7 +3,8 @@ import { Inter } from '@next/font/google'
 import styles from '../styles/Home.module.css'
 import { Children, useEffect, useState } from 'react';
 import Link from 'next/link';
-
+import { app, database } from '../firebaseConfig';
+import { collection, addDoc, getDocs } from 'firebase/firestore';
 
 export default function Home({ data }) {
   const letters = ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'z', 'x', 'c', 'v', 'b', 'n', 'm', '-'];
@@ -13,9 +14,13 @@ export default function Home({ data }) {
   const [lives, setLives] = useState(5);
   const [heart, setHeart] = useState();
   const [score, setScore] = useState(0);
+  const [highscores, setHighscores] = useState();
+  const [highscoresModal, setHighscoresModal] = useState(false);
+  const [name, setName] = useState('');
+
+  const dbInstance = collection(database, 'highscores');
 
   const handleKeyPress = (e, pokemon) => {
-  
       const value = e.target.textContent;
       e.target.disabled = true;
 
@@ -29,8 +34,6 @@ export default function Home({ data }) {
         setLives(lives - 1);
         
       }
-
-      
   }
 
   useEffect(() => {
@@ -48,7 +51,6 @@ export default function Home({ data }) {
   useEffect(() => {
     createHeart(lives);
   }, [lives])
-  
 
   const createHeart = (lives) => {
     let divs = [];
@@ -89,12 +91,12 @@ export default function Home({ data }) {
       
     }
 
-    correct == string.length ? correctGuess() : '';
+    correct == string.length ? correctGuess(string) : '';
    
     setTextBlocks(div);
   }
 
-  const correctGuess = async () => {
+  const correctGuess = async (string) => {
     let rand = Math.floor(Math.random() * 900) + 1;
     const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${rand}`)
     const data = await res.json()
@@ -105,11 +107,11 @@ export default function Home({ data }) {
     })
 
     switch(lives) {
-      case 5: setScore(score + 500); break;
-      case 4: setScore(score + 400); break;
-      case 3: setScore(score + 300); break;
-      case 2: setScore(score + 200); break;
-      case 1: setScore(score + 100); break;
+      case 5: setScore(score + (50 * string.length)); break;
+      case 4: setScore(score + (40 * string.length)); break;
+      case 3: setScore(score + (30 * string.length)); break;
+      case 2: setScore(score + (20 * string.length)); break;
+      case 1: setScore(score + (10 * string.length)); break;
     }
     
     if (!data) {
@@ -123,7 +125,30 @@ export default function Home({ data }) {
     
   }
 
-  let inValue = 0;
+  const getHighscores = async () => {
+    setHighscores([]);
+    let highscoresTemp = [];
+    await getDocs(dbInstance, { field: 'score', direction: 'desc' })
+      .then((data) => {
+        data.docs.map((item) => {
+          highscoresTemp.push({ ...item.data(), id: item.id })
+      })
+    })
+
+    setHighscores(highscoresTemp);
+
+    setHighscoresModal(true);
+  }
+
+  const saveHighscore = () => {
+    addDoc(dbInstance, {
+        name: name,
+        score: score
+    })
+        .then(() => {
+            setName('')
+        })
+  }
 
   return (
     <>
@@ -135,6 +160,7 @@ export default function Home({ data }) {
       </Head>
       <main className={ styles.main }>
         <div className={styles.user}>
+          <button onClick={getHighscores}>Highscores</button>
           <h4>Score: { score }</h4>
           <div className={styles.lives}>
             { heart }
@@ -172,9 +198,36 @@ export default function Home({ data }) {
          { lives === 0 && (
           <div className={styles.gameover}>
             <h1>Game Over</h1>
+            <h3>Score: {score}</h3>
+
+            <div className={styles.inputWrapper}>
+              <input type="text" name="name" id="name" value={name} onChange={(e) => setName(e.target.value) }/>
+              <button onClick={saveHighscore} >Save</button>
+            </div>
+
             <Link href='/' >Retry</Link>
           </div>
         )}
+        { highscoresModal && (
+          <div className={styles.modal}>
+            <div className={styles.modalHeader}>
+              <h1>Highscores</h1>
+              <button onClick={() => setHighscoresModal(false)}>X</button>
+            </div>
+            <div className={styles.highscores}>
+              { highscores && (
+                highscores.map((highscore, index) => (
+                  <div className={styles.row}>
+                    <div className={styles.column}><span>{ index + 1}</span>{highscore.name}</div>
+                    <div className={styles.column}>{highscore.score}</div>
+                  </div>
+                  
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
       </main>
      
     </>
