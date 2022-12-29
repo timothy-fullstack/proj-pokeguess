@@ -143,6 +143,7 @@
 .inputWrapper {
   display: flex;
   flex-wrap: wrap;
+  
 }
 
 .inputWrapper > input {
