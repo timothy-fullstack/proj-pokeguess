@@ -1,0 +1,142 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  justify-content: center;
+  align-items: center;
+  padding-block: 24px;
+  min-height: 100vh;
+}
+
+.pokemon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.keyboard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  max-width: 880px;
+  gap: 16px;
+  padding: 24px;
+}
+
+.key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  font-size: 18px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.key:hover {
+  outline: 1px solid #ccc;
+}
+
+.blocks {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #000;
+  flex-wrap: wrap;
+}
+
+.guess {
+  width: 280px;
+  aspect-ratio: 1 / 1;
+  object-fit: fill;
+  -webkit-filter: contrast(0) sepia(100%) hue-rotate(190deg) saturate(2000%) brightness(100%);
+  filter: contrast(0) sepia(100%) hue-rotate(190deg) saturate(2000%) brightness(0%);
+  opacity: 1;
+}
+
+.types {
+  display: flex;
+  gap: 12px;
+}
+
+.type {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  aspect-ratio: 1 / 1;
+  
+}
+
+.type > img {
+  width: 48px;
+}
+
+.type > h6 {
+  font-size: 16px;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.user {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  padding-inline: 24px;
+}
+
+.lives {
+  display: flex;
+  gap: 12px;
+}
+
+.lives > img {
+  width: 24px;
+}
+
+.gameover {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: 9999;
+  background-color: rgb(99, 99, 99, .5);
+  backdrop-filter: blur(20px);
+}
+
+.gameover > h1 {
+  font-size: 120px;
+  text-transform: uppercase;
+}
+
+.gameover > a {
+  padding: 24px;
+  width: 240px;
+  font-size: 24px;
+  background-color: #FFF;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+
+@media screen and (max-width: 710px) {
+  .key {
+    font-size: 14px;
+    width: 45px;
+    height: 45px;
+  }
+}
