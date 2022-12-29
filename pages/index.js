@@ -130,8 +130,8 @@ export default function Home({ data }) {
     let highscoresTemp = [];
     await getDocs(dbInstance, { field: 'score', direction: 'desc' })
       .then((data) => {
-        data.docs.map((item) => {
-          highscoresTemp.push({ ...item.data(), id: item.id })
+        data.docs.map((item, index) => {
+          highscoresTemp.push({ ...item.data(), id: item.id, key: index })
       })
     })
 
@@ -172,9 +172,9 @@ export default function Home({ data }) {
             <img className={ styles.guess } src={ pokemon.sprites.other.home.front_default }/>
             <div className={styles.types}>
               { pokemon.types.map((type, index) => (
-                <div className={styles.type}>
+                <div className={styles.type} key={index}>
                 <h6>{type.type.name}</h6>
-                <img key={index} src={`/${type.type.name}.png`}  />
+                <img  src={`/${type.type.name}.png`}  />
                 </div>
               )) }
             </div>
@@ -217,7 +217,7 @@ export default function Home({ data }) {
             <div className={styles.highscores}>
               { highscores && (
                 highscores.map((highscore, index) => (
-                  <div className={styles.row}>
+                  <div className={styles.row} key={index}>
                     <div className={styles.column}><span>{ index + 1}</span>{highscore.name}</div>
                     <div className={styles.column}>{highscore.score}</div>
                   </div>
