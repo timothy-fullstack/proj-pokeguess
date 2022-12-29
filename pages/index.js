@@ -199,12 +199,12 @@ export default function Home({ data }) {
           <div className={styles.gameover}>
             <h1>Game Over</h1>
             <h3>Score: {score}</h3>
-
-            <div className={styles.inputWrapper}>
-              <input type="text" name="name" id="name" value={name} onChange={(e) => setName(e.target.value) }/>
-              <button onClick={saveHighscore} >Save</button>
-            </div>
-
+            { score > 0 && (
+              <div className={styles.inputWrapper}>
+                <input type="text" name="name" id="name" value={name} onChange={(e) => setName(e.target.value) }/>
+                <button onClick={saveHighscore} >Save</button>
+              </div>
+            )}
             <Link href='/' >Retry</Link>
           </div>
         )}
